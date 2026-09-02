@@ -17,6 +17,8 @@
     --ida-fg: #0f766e;
     --volta-bg: #e0e7ff;
     --volta-fg: #4338ca;
+    --good: #15803d;
+    --bad: #b91c1c;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -31,46 +33,80 @@
       --ida-fg: #5eead4;
       --volta-bg: #2a2a5c;
       --volta-fg: #a5b4fc;
+      --good: #4ade80;
+      --bad: #f87171;
     }
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 24px 16px 64px;
+    padding: 20px 16px 56px;
+    overflow-x: hidden;
   }
   .wrap { max-width: 1040px; margin: 0 auto; }
-  h1 { font-size: 1.4rem; margin: 0 0 4px; }
-  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 6px; }
-  .note { color: var(--text-muted); font-size: 0.78rem; margin: 0 0 24px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .card-head h2 { font-size: 0.95rem; margin: 0; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  .subtitle { color: var(--text-muted); font-size: 0.88rem; margin: 0 0 20px; }
+  .section-title { font-size: 0.75rem; margin: 0 0 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .today-banner { margin-bottom: 22px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .stat-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .stat-label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted); font-weight: 500; }
+  .stat-value { font-size: clamp(1.4rem, 6vw, 1.85rem); font-weight: 600; line-height: 1.15; }
+  .stat-value.stat-empty { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+  .stat-sub { margin-top: 6px; font-size: 0.78rem; color: var(--text-muted); }
+  .stat-delta { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+  .stat-delta.delta-down { color: var(--good); }
+  .stat-delta.delta-up { color: var(--bad); }
+
+  .note { color: var(--text-muted); font-size: 0.78rem; margin: 0 0 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .card-head h2 { font-size: 0.92rem; margin: 0; }
   .card-head .flight-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
   .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   th { color: var(--text-muted); font-weight: 600; }
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
   .empty { color: var(--text-muted); padding: 24px; text-align: center; }
   .updated { color: var(--text-muted); font-size: 0.8rem; margin: 20px 0 8px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .badge-ida { background: var(--ida-bg); color: var(--ida-fg); }
   .badge-volta { background: var(--volta-bg); color: var(--volta-fg); }
   .price { font-weight: 600; }
   .offer-link { color: var(--link); text-decoration: none; font-size: 0.85rem; }
   .offer-link:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    body { padding: 16px 12px 48px; }
+    h1 { font-size: 1.12rem; }
+    .subtitle { font-size: 0.82rem; }
+    .stat-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+    .stat-tile { padding: 12px; }
+    .card { padding: 12px; }
+    th, td { padding: 7px 8px; font-size: 0.78rem; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Precos: Rio de Janeiro para Buenos Aires (Aeroparque)</h1>
   <p class="subtitle" id="subtitle">Carregando...</p>
+
+  <section class="today-banner">
+    <h2 class="section-title">Precos de hoje</h2>
+    <div class="stat-grid" id="statGrid"></div>
+  </section>
+
   <p class="note">Mostrando apenas buscas em que um preco foi encontrado. Buscas sem preco (site fora do ar, bloqueio, etc.) nao aparecem aqui.</p>
 
   <div class="cards" id="charts"></div>
@@ -100,6 +136,10 @@ const SITE_LABELS = { google_flights: "Google Flights", decolar: "Decolar.com", 
 const SITE_COLORS = { google_flights: "#4285F4", decolar: "#FF6B00", latam: "#6E2585" };
 const AIRPORT_NAMES = { GIG: "Galeao (GIG)", SDU: "Santos Dumont (SDU)" };
 const LEG_LABELS = { ida: "Ida", volta: "Volta" };
+const LEG_ROUTE_TITLES = {
+  ida: "Rio de Janeiro (GIG/SDU) &rarr; Aeroparque (AEP)",
+  volta: "Aeroparque (AEP) &rarr; Rio de Janeiro (GIG/SDU)",
+};
 
 function fmtBRL(value) {
   if (value === null || value === undefined || value === "") return "-";
@@ -126,21 +166,24 @@ function routeLabel(row) {
     : (AIRPORT_NAMES[row.rio_airport] || row.rio_airport) + " &rarr; Aeroparque (AEP)";
 }
 
-function latestPerSiteDay(rows) {
+// Per site+day, keep only the cheapest observation. Rows passed in may span
+// both Rio airports for the same leg - aggregating means each point on the
+// chart is "the best price found that day", regardless of which airport.
+function cheapestPerSiteDay(rows) {
   const map = new Map();
   for (const r of rows) {
     if (r.price_brl == null) continue;
     const day = (r.collected_at || "").slice(0, 10);
     const key = r.site + "|" + day;
     const prev = map.get(key);
-    if (!prev || r.collected_at > prev.collected_at) map.set(key, r);
+    if (!prev || r.price_brl < prev.price_brl) map.set(key, r);
   }
   return map;
 }
 
 function buildChartSVG(rows) {
   const width = 520, height = 200, padL = 46, padR = 12, padT = 12, padB = 28;
-  const perDay = latestPerSiteDay(rows);
+  const perDay = cheapestPerSiteDay(rows);
   const dates = [...new Set([...perDay.values()].map((r) => r.collected_at.slice(0, 10)))].sort();
   const sites = [...new Set([...perDay.values()].map((r) => r.site))];
 
@@ -197,32 +240,83 @@ function buildChartSVG(rows) {
   return svg;
 }
 
-function renderCharts(rows, origins) {
+// Two charts total (Ida / Volta), each aggregating both Rio airports - not
+// split 4 ways, so the page stays scannable on a phone.
+function renderCharts(rows, departDate, returnDate) {
   const container = document.getElementById("charts");
   container.innerHTML = "";
-  for (const rioAirport of origins) {
-    for (const tripLeg of ["ida", "volta"]) {
-      const routeRows = rows.filter((r) => r.rio_airport === rioAirport && r.trip_leg === tripLeg);
-      const card = document.createElement("div");
-      card.className = "card";
-      const sitesPresent = [...new Set(routeRows.map((r) => r.site))];
-      const legend = sitesPresent
-        .map((s) => '<span><span class="dot" style="background:' + (SITE_COLORS[s] || "#888") + '"></span>' + (SITE_LABELS[s] || s) + "</span>")
-        .join("");
-      const flightDate = routeRows.length > 0 ? routeRows[0].flight_date : "";
-      const routeTitle =
-        tripLeg === "volta"
-          ? "Aeroparque (AEP) &rarr; " + (AIRPORT_NAMES[rioAirport] || rioAirport)
-          : (AIRPORT_NAMES[rioAirport] || rioAirport) + " &rarr; Aeroparque (AEP)";
-      card.innerHTML =
-        '<div class="card-head">' +
-        '<h2><span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + routeTitle + "</h2>" +
-        '<span class="flight-date">' + (flightDate ? fmtDate(flightDate) : "") + "</span>" +
-        "</div>" +
-        buildChartSVG(routeRows) +
-        '<div class="legend">' + (legend || "Sem coletas ainda") + "</div>";
-      container.appendChild(card);
+  for (const tripLeg of ["ida", "volta"]) {
+    const legRows = rows.filter((r) => r.trip_leg === tripLeg);
+    const card = document.createElement("div");
+    card.className = "card";
+    const sitesPresent = [...new Set(legRows.map((r) => r.site))];
+    const legend = sitesPresent
+      .map((s) => '<span><span class="dot" style="background:' + (SITE_COLORS[s] || "#888") + '"></span>' + (SITE_LABELS[s] || s) + "</span>")
+      .join("");
+    const flightDate = tripLeg === "ida" ? departDate : returnDate;
+    card.innerHTML =
+      '<div class="card-head">' +
+      '<h2><span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + LEG_ROUTE_TITLES[tripLeg] + "</h2>" +
+      '<span class="flight-date">' + (flightDate ? fmtDate(flightDate) : "") + "</span>" +
+      "</div>" +
+      buildChartSVG(legRows) +
+      '<div class="legend">' + (legend || "Sem coletas ainda") + "</div>";
+    container.appendChild(card);
+  }
+}
+
+// "Today" banner: cheapest price known per leg (aggregated across both Rio
+// airports), with the airport/site that had it and how it moved vs the
+// previous day the leg was collected.
+function buildStatTiles(rows) {
+  const grid = document.getElementById("statGrid");
+  grid.innerHTML = "";
+  for (const tripLeg of ["ida", "volta"]) {
+    const legRows = rows.filter((r) => r.trip_leg === tripLeg && r.price_brl != null);
+    const tile = document.createElement("div");
+    tile.className = "stat-tile";
+    const labelHtml = '<span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + LEG_ROUTE_TITLES[tripLeg];
+
+    if (legRows.length === 0) {
+      tile.innerHTML =
+        '<div class="stat-head"><span class="stat-label">' + labelHtml + "</span></div>" +
+        '<div class="stat-value stat-empty">&mdash;</div>' +
+        '<div class="stat-sub">Sem coleta ainda</div>';
+      grid.appendChild(tile);
+      continue;
     }
+
+    const byDay = new Map();
+    for (const r of legRows) {
+      const day = r.collected_at.slice(0, 10);
+      const prev = byDay.get(day);
+      if (!prev || r.price_brl < prev.price_brl) byDay.set(day, r);
+    }
+    const days = [...byDay.keys()].sort();
+    const latestDay = days[days.length - 1];
+    const latest = byDay.get(latestDay);
+    const prevDay = days.length > 1 ? days[days.length - 2] : null;
+    const prevEntry = prevDay ? byDay.get(prevDay) : null;
+
+    let deltaHtml = "";
+    if (prevEntry) {
+      const diff = latest.price_brl - prevEntry.price_brl;
+      if (Math.abs(diff) >= 1) {
+        const down = diff < 0;
+        deltaHtml =
+          '<span class="stat-delta ' + (down ? "delta-down" : "delta-up") + '">' +
+          (down ? "&#9660; " : "&#9650; ") + "R$ " + Math.round(Math.abs(diff)) + "</span>";
+      }
+    }
+
+    tile.innerHTML =
+      '<div class="stat-head"><span class="stat-label">' + labelHtml + "</span>" + deltaHtml + "</div>" +
+      '<div class="stat-value">R$ ' + Math.round(latest.price_brl).toLocaleString("pt-BR") + "</div>" +
+      '<div class="stat-sub">' +
+      (AIRPORT_NAMES[latest.rio_airport] || latest.rio_airport) + " &middot; " +
+      (SITE_LABELS[latest.site] || latest.site) + " &middot; " + fmtDate(latestDay) +
+      "</div>";
+    grid.appendChild(tile);
   }
 }
 
@@ -254,13 +348,13 @@ fetch("./data.json", { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
     const rows = (data.rows || []).filter((r) => r.price_brl !== null && r.price_brl !== undefined && r.price_brl !== "");
-    const origins = data.origin_options || [...new Set(rows.map((r) => r.rio_airport))];
     document.getElementById("subtitle").textContent =
       "Ida " + fmtDate(data.depart_date) + ", volta " + fmtDate(data.return_date) + ". Destino: Aeroparque Jorge Newbery (" + data.destination + ").";
     document.getElementById("generated").textContent = data.generated_at
       ? "Ultima coleta processada em: " + fmtDateTime(data.generated_at)
       : "Ainda sem nenhuma coleta registrada.";
-    renderCharts(rows, origins);
+    buildStatTiles(rows);
+    renderCharts(rows, data.depart_date, data.return_date);
     renderTable(rows);
   })
   .catch((err) => {

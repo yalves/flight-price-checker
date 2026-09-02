@@ -1,0 +1,7 @@
+﻿collected_at,site,origin,destination,depart_date,return_date,price_brl,status,note
+2026-09-02T19:12:22,google_flights,GIG,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.
+2026-09-02T19:12:33,google_flights,SDU,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.
+2026-09-02T19:12:41,decolar,GIG,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.
+2026-09-02T19:12:53,decolar,SDU,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.
+2026-09-02T19:13:06,latam,GIG,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.
+2026-09-02T19:13:13,latam,SDU,AEP,2026-11-21,2026-11-28,,no_price_found,Nenhum preco reconhecido no texto da pagina.

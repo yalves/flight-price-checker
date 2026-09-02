@@ -1,4 +1,5 @@
-"""Coleta o preco mais baixo exibido no site da LATAM para uma rota e datas."""
+"""Coleta o preco mais baixo exibido no site da LATAM para um trecho (ida ou
+volta) e data especificos."""
 from __future__ import annotations
 
 import logging
@@ -15,16 +16,15 @@ log = logging.getLogger(__name__)
 _CONSENT_LABELS = ["Aceitar", "Aceitar todos os cookies", "Aceito"]
 
 
-def _search_url(origin: str, destination: str, depart: date, ret: date) -> str:
+def _search_url(origin: str, destination: str, flight_date: date) -> str:
     params = {
         "origin": origin,
         "destination": destination,
-        "outbound": f"{depart.isoformat()}T12:00:00.000Z",
-        "inbound": f"{ret.isoformat()}T12:00:00.000Z",
+        "outbound": f"{flight_date.isoformat()}T12:00:00.000Z",
         "adt": str(config.ADULTS),
         "chd": "0",
         "inf": "0",
-        "trip": "RT",
+        "trip": "OW",
         "cabin": "Economy",
         "redemption": "false",
         "sort": "RECOMMENDED",
@@ -44,15 +44,19 @@ def _dismiss_consent(page) -> None:
             continue
 
 
-def scrape(context, origin: str, destination: str, depart: date, ret: date) -> list[PriceResult]:
-    url = _search_url(origin, destination, depart, ret)
+def scrape(
+    context, origin: str, destination: str, flight_date: date, trip_leg: str, rio_airport: str
+) -> list[PriceResult]:
+    url = _search_url(origin, destination, flight_date)
     page = context.new_page()
     result = PriceResult(
         site=SITE_NAME,
+        trip_leg=trip_leg,
+        rio_airport=rio_airport,
         origin=origin,
         destination=destination,
-        depart_date=depart.isoformat(),
-        return_date=ret.isoformat(),
+        flight_date=flight_date.isoformat(),
+        url=url,
     )
     try:
         page.goto(url, timeout=config.NAV_TIMEOUT_MS, wait_until="domcontentloaded")
@@ -69,8 +73,8 @@ def scrape(context, origin: str, destination: str, depart: date, ret: date) -> l
     except Exception as exc:
         result.status = "error"
         result.note = f"{type(exc).__name__}: {exc}"
-        log.exception("Falha ao buscar na LATAM (origem %s)", origin)
+        log.exception("Falha ao buscar na LATAM (%s, %s)", rio_airport, trip_leg)
     finally:
-        save_debug_artifacts(page, SITE_NAME, origin)
+        save_debug_artifacts(page, SITE_NAME, rio_airport, trip_leg)
         page.close()
     return [result]

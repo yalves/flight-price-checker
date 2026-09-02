@@ -11,11 +11,19 @@ Todo dia, um workflow do GitHub Actions abre um Chromium headless
 - **Decolar.com**
 - **LATAM**
 
-O resultado de cada combinacao site x aeroporto de origem vira uma linha em
-`precos_rio_buenosaires.csv`, e um resumo em JSON e gravado em
-`docs/data.json`. Uma pagina estatica em `docs/index.html` le esse JSON e
-mostra graficos e uma tabela com o historico de precos, publicada pelo
-GitHub Pages.
+A ida (aeroporto do Rio &rarr; Aeroparque) e a volta (Aeroparque &rarr;
+aeroporto do Rio) sao buscadas separadamente, uma passagem so de ida de
+cada vez, para que cada preco coletado fique claramente identificado como
+"Ida" ou "Volta" — em vez de um preco unico de ida-e-volta somados.
+
+So combinacoes site x aeroporto x trecho em que um preco foi realmente
+encontrado viram linha em `precos_rio_buenosaires.csv`; uma busca que falha
+(bloqueio do site, selector quebrado, etc.) fica registrada so no log da
+execucao, sem gerar linha vazia no CSV ou no dashboard. Cada linha guarda
+tambem o link de busca usado no site, para ir direto conferir/comprar a
+oferta. Um resumo em JSON e gravado em `docs/data.json`; uma pagina
+estatica em `docs/index.html` le esse JSON e mostra graficos e uma tabela
+com o historico de precos, publicada pelo GitHub Pages.
 
 ## Como roda
 
@@ -77,9 +85,11 @@ espere a proxima execucao agendada) para o dashboard refletir a nova busca.
 
 Google Flights, Decolar e LATAM usam protecao contra bots, e de vez em
 quando um ou outro pode bloquear a requisicao ou mudar a estrutura da
-pagina. Quando isso acontece, a linha correspondente no CSV/dashboard
-aparece com `status=error` ou `status=no_price_found` em vez de um preco —
-isso e esperado ocasionalmente e nao trava a coleta dos outros dois sites.
-Se um site ficar falhando com frequencia, o log da execucao (aba **Actions**
-do workflow, ou `logs/crawler.log` numa rodada local) costuma mostrar o
-motivo, e as vezes um screenshot de depuracao em `logs/`.
+pagina. Quando isso acontece, essa busca especifica (site x aeroporto x
+trecho) simplesmente nao gera linha nenhuma no CSV/dashboard — ela nao
+aparece como um erro visivel na pagina, so fica registrada no log. Isso e
+esperado ocasionalmente e nao trava a coleta dos outros sites/trechos. Se
+um site ficar falhando com frequencia (poucas linhas novas aparecendo para
+ele ao longo dos dias), o log da execucao (aba **Actions** do workflow, ou
+`logs/crawler.log` numa rodada local) costuma mostrar o motivo, e as vezes
+um screenshot de depuracao em `logs/`.

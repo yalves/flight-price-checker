@@ -11,10 +11,12 @@
     --text: #1c1c1c;
     --text-muted: #6b6b6b;
     --border: #e3e2df;
-    --ok: #1a7f37;
-    --error: #b42318;
-    --warn: #966400;
     --accent: #1c1c1c;
+    --link: #1a56db;
+    --ida-bg: #ccfbf1;
+    --ida-fg: #0f766e;
+    --volta-bg: #e0e7ff;
+    --volta-fg: #4338ca;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -23,10 +25,12 @@
       --text: #eaeaea;
       --text-muted: #9a9a9a;
       --border: #33333a;
-      --ok: #3fb950;
-      --error: #f85149;
-      --warn: #d29922;
       --accent: #eaeaea;
+      --link: #7aa2f7;
+      --ida-bg: #113d3a;
+      --ida-fg: #5eead4;
+      --volta-bg: #2a2a5c;
+      --volta-fg: #a5b4fc;
     }
   }
   * { box-sizing: border-box; }
@@ -37,30 +41,37 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding: 24px 16px 64px;
   }
-  .wrap { max-width: 980px; margin: 0 auto; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
   h1 { font-size: 1.4rem; margin: 0 0 4px; }
-  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 24px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 6px; }
+  .note { color: var(--text-muted); font-size: 0.78rem; margin: 0 0 24px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .card h2 { font-size: 1rem; margin: 0 0 10px; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .card-head h2 { font-size: 0.95rem; margin: 0; }
+  .card-head .flight-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
   .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   th { color: var(--text-muted); font-weight: 600; }
-  .status-ok { color: var(--ok); font-weight: 600; }
-  .status-error { color: var(--error); font-weight: 600; }
-  .status-no_price_found { color: var(--warn); font-weight: 600; }
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
   .empty { color: var(--text-muted); padding: 24px; text-align: center; }
   .updated { color: var(--text-muted); font-size: 0.8rem; margin: 20px 0 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-ida { background: var(--ida-bg); color: var(--ida-fg); }
+  .badge-volta { background: var(--volta-bg); color: var(--volta-fg); }
+  .price { font-weight: 600; }
+  .offer-link { color: var(--link); text-decoration: none; font-size: 0.85rem; }
+  .offer-link:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Precos: Rio de Janeiro para Buenos Aires (Aeroparque)</h1>
   <p class="subtitle" id="subtitle">Carregando...</p>
+  <p class="note">Mostrando apenas buscas em que um preco foi encontrado. Buscas sem preco (site fora do ar, bloqueio, etc.) nao aparecem aqui.</p>
 
   <div class="cards" id="charts"></div>
 
@@ -69,11 +80,11 @@
       <thead>
         <tr>
           <th>Coletado em</th>
+          <th>Trecho</th>
+          <th>Data do voo</th>
           <th>Site</th>
-          <th>Origem</th>
           <th>Preco (R$)</th>
-          <th>Status</th>
-          <th>Nota</th>
+          <th>Oferta</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -87,7 +98,8 @@
 <script>
 const SITE_LABELS = { google_flights: "Google Flights", decolar: "Decolar.com", latam: "LATAM" };
 const SITE_COLORS = { google_flights: "#4285F4", decolar: "#FF6B00", latam: "#6E2585" };
-const ORIGIN_LABELS = { GIG: "Galeao (GIG)", SDU: "Santos Dumont (SDU)" };
+const AIRPORT_NAMES = { GIG: "Galeao (GIG)", SDU: "Santos Dumont (SDU)" };
+const LEG_LABELS = { ida: "Ida", volta: "Volta" };
 
 function fmtBRL(value) {
   if (value === null || value === undefined || value === "") return "-";
@@ -101,10 +113,23 @@ function fmtDateTime(iso) {
   return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function fmtDate(iso) {
+  if (!iso) return "-";
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return iso;
+  return `${d}/${m}/${y}`;
+}
+
+function routeLabel(row) {
+  return row.trip_leg === "volta"
+    ? "Aeroparque (AEP) &rarr; " + (AIRPORT_NAMES[row.rio_airport] || row.rio_airport)
+    : (AIRPORT_NAMES[row.rio_airport] || row.rio_airport) + " &rarr; Aeroparque (AEP)";
+}
+
 function latestPerSiteDay(rows) {
   const map = new Map();
   for (const r of rows) {
-    if (r.status !== "ok" || r.price_brl == null) continue;
+    if (r.price_brl == null) continue;
     const day = (r.collected_at || "").slice(0, 10);
     const key = r.site + "|" + day;
     const prev = map.get(key);
@@ -113,16 +138,15 @@ function latestPerSiteDay(rows) {
   return map;
 }
 
-function buildChartSVG(rows, originCode) {
-  const width = 560, height = 220, padL = 46, padR = 12, padT = 12, padB = 28;
-  const originRows = rows.filter((r) => r.origin === originCode);
-  const perDay = latestPerSiteDay(originRows);
+function buildChartSVG(rows) {
+  const width = 520, height = 200, padL = 46, padR = 12, padT = 12, padB = 28;
+  const perDay = latestPerSiteDay(rows);
   const dates = [...new Set([...perDay.values()].map((r) => r.collected_at.slice(0, 10)))].sort();
   const sites = [...new Set([...perDay.values()].map((r) => r.site))];
 
   if (dates.length === 0) {
     return '<svg width="100%" viewBox="0 0 ' + width + ' ' + height + '"><text x="' + (width / 2) + '" y="' + (height / 2) +
-      '" text-anchor="middle" fill="var(--text-muted)" font-size="13">Sem coletas com sucesso ainda</text></svg>';
+      '" text-anchor="middle" fill="var(--text-muted)" font-size="13">Sem coletas ainda</text></svg>';
   }
 
   const allPrices = [...perDay.values()].map((r) => r.price_brl);
@@ -137,7 +161,6 @@ function buildChartSVG(rows, originCode) {
 
   let svg = '<svg width="100%" viewBox="0 0 ' + width + ' ' + height + '" role="img">';
 
-  // gridlines + y labels
   const gridLines = 4;
   for (let i = 0; i <= gridLines; i++) {
     const v = minP + ((maxP - minP) * i) / gridLines;
@@ -146,7 +169,6 @@ function buildChartSVG(rows, originCode) {
     svg += '<text x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--text-muted)">' + Math.round(v) + '</text>';
   }
 
-  // x labels (skip some if too many)
   const labelEvery = Math.max(1, Math.ceil(dates.length / 6));
   dates.forEach((d, i) => {
     if (i % labelEvery !== 0 && i !== dates.length - 1) return;
@@ -178,18 +200,29 @@ function buildChartSVG(rows, originCode) {
 function renderCharts(rows, origins) {
   const container = document.getElementById("charts");
   container.innerHTML = "";
-  for (const origin of origins) {
-    const card = document.createElement("div");
-    card.className = "card";
-    const sitesPresent = [...new Set(rows.filter((r) => r.origin === origin && r.status === "ok").map((r) => r.site))];
-    const legend = sitesPresent
-      .map((s) => '<span><span class="dot" style="background:' + (SITE_COLORS[s] || "#888") + '"></span>' + (SITE_LABELS[s] || s) + "</span>")
-      .join("");
-    card.innerHTML =
-      "<h2>" + (ORIGIN_LABELS[origin] || origin) + " &rarr; Aeroparque (AEP)</h2>" +
-      buildChartSVG(rows, origin) +
-      '<div class="legend">' + (legend || "Sem coletas ainda") + "</div>";
-    container.appendChild(card);
+  for (const rioAirport of origins) {
+    for (const tripLeg of ["ida", "volta"]) {
+      const routeRows = rows.filter((r) => r.rio_airport === rioAirport && r.trip_leg === tripLeg);
+      const card = document.createElement("div");
+      card.className = "card";
+      const sitesPresent = [...new Set(routeRows.map((r) => r.site))];
+      const legend = sitesPresent
+        .map((s) => '<span><span class="dot" style="background:' + (SITE_COLORS[s] || "#888") + '"></span>' + (SITE_LABELS[s] || s) + "</span>")
+        .join("");
+      const flightDate = routeRows.length > 0 ? routeRows[0].flight_date : "";
+      const routeTitle =
+        tripLeg === "volta"
+          ? "Aeroparque (AEP) &rarr; " + (AIRPORT_NAMES[rioAirport] || rioAirport)
+          : (AIRPORT_NAMES[rioAirport] || rioAirport) + " &rarr; Aeroparque (AEP)";
+      card.innerHTML =
+        '<div class="card-head">' +
+        '<h2><span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + routeTitle + "</h2>" +
+        '<span class="flight-date">' + (flightDate ? fmtDate(flightDate) : "") + "</span>" +
+        "</div>" +
+        buildChartSVG(routeRows) +
+        '<div class="legend">' + (legend || "Sem coletas ainda") + "</div>";
+      container.appendChild(card);
+    }
   }
 }
 
@@ -205,13 +238,14 @@ function renderTable(rows) {
   const sorted = [...rows].sort((a, b) => (a.collected_at < b.collected_at ? 1 : -1));
   for (const r of sorted) {
     const tr = document.createElement("tr");
+    const link = r.url ? '<a class="offer-link" href="' + r.url + '" target="_blank" rel="noopener">Ver oferta &#8599;</a>' : "-";
     tr.innerHTML =
       "<td>" + fmtDateTime(r.collected_at) + "</td>" +
+      '<td><span class="badge badge-' + r.trip_leg + '">' + (LEG_LABELS[r.trip_leg] || r.trip_leg) + "</span> " + routeLabel(r) + "</td>" +
+      "<td>" + fmtDate(r.flight_date) + "</td>" +
       "<td>" + (SITE_LABELS[r.site] || r.site) + "</td>" +
-      "<td>" + (ORIGIN_LABELS[r.origin] || r.origin) + "</td>" +
-      "<td>" + fmtBRL(r.price_brl) + "</td>" +
-      '<td class="status-' + r.status + '">' + r.status + "</td>" +
-      "<td>" + (r.note || "") + "</td>";
+      '<td class="price">' + fmtBRL(r.price_brl) + "</td>" +
+      "<td>" + link + "</td>";
     tbody.appendChild(tr);
   }
 }
@@ -219,10 +253,10 @@ function renderTable(rows) {
 fetch("./data.json", { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
-    const rows = data.rows || [];
-    const origins = data.origin_options || [...new Set(rows.map((r) => r.origin))];
+    const rows = (data.rows || []).filter((r) => r.price_brl !== null && r.price_brl !== undefined && r.price_brl !== "");
+    const origins = data.origin_options || [...new Set(rows.map((r) => r.rio_airport))];
     document.getElementById("subtitle").textContent =
-      "Ida " + data.depart_date + ", volta " + data.return_date + ". Destino: Aeroparque Jorge Newbery (" + data.destination + ").";
+      "Ida " + fmtDate(data.depart_date) + ", volta " + fmtDate(data.return_date) + ". Destino: Aeroparque Jorge Newbery (" + data.destination + ").";
     document.getElementById("generated").textContent = data.generated_at
       ? "Ultima coleta processada em: " + fmtDateTime(data.generated_at)
       : "Ainda sem nenhuma coleta registrada.";

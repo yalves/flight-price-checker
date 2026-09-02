@@ -1,8 +1,144 @@
 {
-  "generated_at": null,
-  "origin_options": ["GIG", "SDU"],
+  "generated_at": "2026-09-02T22:17:01",
+  "origin_options": [
+    "GIG",
+    "SDU"
+  ],
   "destination": "AEP",
   "depart_date": "2026-11-21",
   "return_date": "2026-11-28",
-  "rows": []
+  "rows": [
+    {
+      "collected_at": "2026-09-02T19:12:22",
+      "site": "google_flights",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T19:12:33",
+      "site": "google_flights",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T19:12:41",
+      "site": "decolar",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T19:12:53",
+      "site": "decolar",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T19:13:06",
+      "site": "latam",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T19:13:13",
+      "site": "latam",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T22:16:05",
+      "site": "google_flights",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": 867.0,
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-09-02T22:16:13",
+      "site": "google_flights",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": 867.0,
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-09-02T22:16:21",
+      "site": "decolar",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T22:16:34",
+      "site": "decolar",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T22:16:46",
+      "site": "latam",
+      "origin": "GIG",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    },
+    {
+      "collected_at": "2026-09-02T22:16:53",
+      "site": "latam",
+      "origin": "SDU",
+      "destination": "AEP",
+      "depart_date": "2026-11-21",
+      "return_date": "2026-11-28",
+      "price_brl": null,
+      "status": "no_price_found",
+      "note": "Nenhum preco reconhecido no texto da pagina."
+    }
+  ]
 }

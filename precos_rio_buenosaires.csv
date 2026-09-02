@@ -1,0 +1,5 @@
+﻿collected_at,site,trip_leg,rio_airport,origin,destination,flight_date,price_brl,url,status,note
+2026-09-02T22:43:50,google_flights,ida,GIG,GIG,AEP,2026-11-21,404.0,https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-21+one+way,ok,
+2026-09-02T22:43:58,google_flights,volta,GIG,AEP,GIG,2026-11-28,1181.0,https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way,ok,
+2026-09-02T22:44:07,google_flights,ida,SDU,SDU,AEP,2026-11-21,404.0,https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Rio+de+Janeiro+Santos+Dumont+Airport+%28SDU%29+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-21+one+way,ok,
+2026-09-02T22:44:15,google_flights,volta,SDU,AEP,SDU,2026-11-28,1244.0,https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Santos+Dumont+Airport+%28SDU%29+2026-11-28+one+way,ok,

@@ -16,7 +16,13 @@ _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SITE_DATA_JSON = os.path.join(_THIS_DIR, "docs", "data.json")
 
 NAV_TIMEOUT_MS = 45_000
-POST_LOAD_WAIT_MS = 7_000
+# Actively wait for a price to actually show up on the page (up to this long)
+# instead of a blind fixed delay - a fixed delay can fire before real search
+# results replace a loading/teaser state and end up scraping the wrong number.
+PRICE_WAIT_TIMEOUT_MS = 40_000
+# Small fixed buffer after a price first appears, to let the results list
+# finish settling/re-sorting.
+SETTLE_WAIT_MS = 1_500
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

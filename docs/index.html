@@ -19,6 +19,9 @@
     --volta-fg: #4338ca;
     --good: #15803d;
     --bad: #b91c1c;
+    --hot-bg: #fffbeb;
+    --hot-border: #f59e0b;
+    --hot-fg: #92400e;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -35,6 +38,9 @@
       --volta-fg: #a5b4fc;
       --good: #4ade80;
       --bad: #f87171;
+      --hot-bg: #3a2a08;
+      --hot-border: #f59e0b;
+      --hot-fg: #fcd34d;
     }
   }
   * { box-sizing: border-box; }
@@ -55,6 +61,7 @@
 
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
   .stat-tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-tile.stat-hot { background: var(--hot-bg); border: 2px solid var(--hot-border); padding: 13px 15px; }
   .stat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
   .stat-label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted); font-weight: 500; }
   .stat-value { font-size: clamp(1.4rem, 6vw, 1.85rem); font-weight: 600; line-height: 1.15; }
@@ -63,6 +70,12 @@
   .stat-delta { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
   .stat-delta.delta-down { color: var(--good); }
   .stat-delta.delta-up { color: var(--bad); }
+  .hot-badge {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+    font-size: 0.72rem; font-weight: 700; color: var(--hot-fg);
+    background: color-mix(in srgb, var(--hot-border) 18%, transparent);
+    padding: 3px 9px; border-radius: 999px;
+  }
 
   .note { color: var(--text-muted); font-size: 0.78rem; margin: 0 0 20px; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -140,6 +153,9 @@ const LEG_ROUTE_TITLES = {
   ida: "Rio de Janeiro (GIG/SDU) &rarr; Aeroparque (AEP)",
   volta: "Aeroparque (AEP) &rarr; Rio de Janeiro (GIG/SDU)",
 };
+// Highlight a stat tile when the cheapest known price for that leg is at or
+// below this value.
+const LOW_PRICE_THRESHOLD_BRL = 600;
 
 function fmtBRL(value) {
   if (value === null || value === undefined || value === "") return "-";
@@ -309,13 +325,19 @@ function buildStatTiles(rows) {
       }
     }
 
+    const isLowPrice = latest.price_brl <= LOW_PRICE_THRESHOLD_BRL;
+    if (isLowPrice) tile.classList.add("stat-hot");
+    const hotBadgeHtml = isLowPrice
+      ? '<div class="hot-badge">&#128293; Preco baixo (até R$ ' + LOW_PRICE_THRESHOLD_BRL + ")</div>"
+      : "";
+
     tile.innerHTML =
       '<div class="stat-head"><span class="stat-label">' + labelHtml + "</span>" + deltaHtml + "</div>" +
       '<div class="stat-value">R$ ' + Math.round(latest.price_brl).toLocaleString("pt-BR") + "</div>" +
       '<div class="stat-sub">' +
       (AIRPORT_NAMES[latest.rio_airport] || latest.rio_airport) + " &middot; " +
       (SITE_LABELS[latest.site] || latest.site) + " &middot; " + fmtDate(latestDay) +
-      "</div>";
+      "</div>" + hotBadgeHtml;
     grid.appendChild(tile);
   }
 }

@@ -13,7 +13,7 @@ import logging
 from datetime import date
 
 import config
-from common import PriceResult, extract_prices_from_text, save_debug_artifacts
+from common import PriceResult, apply_extracted_price, save_debug_artifacts, wait_for_price_text
 
 SITE_NAME = "decolar"
 
@@ -59,16 +59,12 @@ def scrape(
     try:
         page.goto(url, timeout=config.NAV_TIMEOUT_MS, wait_until="domcontentloaded")
         _dismiss_consent(page)
-        # Resultados carregam de forma assincrona; espera mais que o padrao.
-        page.wait_for_timeout(config.POST_LOAD_WAIT_MS + 5000)
+        wait_for_price_text(page, config.PRICE_WAIT_TIMEOUT_MS)
+        # Resultados carregam de forma assincrona; espera mais que o padrao
+        # depois que o primeiro preco aparece, para a lista terminar de assentar.
+        page.wait_for_timeout(config.SETTLE_WAIT_MS + 5000)
         text = page.inner_text("body")
-        prices = extract_prices_from_text(text)
-        if prices:
-            result.price_brl = min(prices)
-            result.status = "ok"
-        else:
-            result.status = "no_price_found"
-            result.note = "Nenhum preco reconhecido no texto da pagina."
+        apply_extracted_price(result, text)
     except Exception as exc:
         result.status = "error"
         result.note = f"{type(exc).__name__}: {exc}"

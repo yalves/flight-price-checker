@@ -13,6 +13,38 @@ import config
 
 _PRICE_RE = re.compile(r"R\$\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?")
 
+# Text hints used to tell whether a fare shown near a price includes a
+# checked bag. Best-effort: sites word this differently and can change
+# wording, so an amount with no baggage hint nearby is skipped rather than
+# assumed to include one - see extract_priced_offers_with_checked_bag().
+_CHECKED_BAG_INCLUDED_HINTS = [
+    "bagagem despachada incluída",
+    "bagagem despachada incluida",
+    "bagagem despachada grátis",
+    "bagagem despachada gratis",
+    "1 bagagem despachada",
+    "2 bagagens despachadas",
+    "inclui bagagem despachada",
+    "com bagagem despachada",
+    "bagagem despachada: incluída",
+    "checked bag included",
+    "1 checked bag",
+    "2 checked bags",
+]
+_CHECKED_BAG_EXCLUDED_HINTS = [
+    "sem bagagem despachada",
+    "não inclui bagagem despachada",
+    "nao inclui bagagem despachada",
+    "bagagem despachada não incluída",
+    "bagagem despachada nao incluida",
+    "somente bagagem de mão",
+    "apenas bagagem de mão",
+    "só bagagem de mão",
+    "no checked bag",
+    "carry-on bag only",
+    "hand baggage only",
+]
+
 CSV_FIELDS = [
     "collected_at",
     "site",
@@ -60,6 +92,65 @@ def extract_prices_from_text(text: str, min_value: float = 150, max_value: float
         if value is not None and min_value <= value <= max_value:
             prices.append(value)
     return prices
+
+
+def extract_priced_offers_with_checked_bag(
+    text: str, min_value: float = 150, max_value: float = 15_000
+) -> list[float]:
+    """Like extract_prices_from_text, but only keeps an amount that sits on
+    the same line as an explicit "checked bag included" mention, and always
+    drops one on a line marked carry-on-only/no checked bag. An amount with
+    no baggage wording on its own line is dropped too - missing a fare is
+    safer than quietly counting one that has no checked bag. Deliberately
+    scoped to a single line (not a wider character/line window): different
+    fare options usually render as adjacent lines, and a wider window ends
+    up mixing one fare's price with a neighboring fare's baggage wording."""
+    offers = []
+    for line in text.splitlines():
+        lower_line = line.lower()
+        if not _PRICE_RE.search(line):
+            continue
+        if any(hint in lower_line for hint in _CHECKED_BAG_EXCLUDED_HINTS):
+            continue
+        if not any(hint in lower_line for hint in _CHECKED_BAG_INCLUDED_HINTS):
+            continue
+        for m in _PRICE_RE.finditer(line):
+            value = _to_float(m.group(0))
+            if value is not None and min_value <= value <= max_value:
+                offers.append(value)
+    return offers
+
+
+def apply_extracted_price(result: PriceResult, text: str) -> None:
+    """Fill in result.price_brl/status/note from page text, accepting only an
+    offer whose nearby text confirms a checked bag is included."""
+    bag_offers = extract_priced_offers_with_checked_bag(text)
+    if bag_offers:
+        result.price_brl = min(bag_offers)
+        result.status = "ok"
+        return
+    raw_offers = extract_prices_from_text(text)
+    result.status = "no_price_found"
+    if raw_offers:
+        result.note = (
+            f"{len(raw_offers)} preco(s) encontrados, mas nenhum com bagagem despachada "
+            "confirmada no texto da pagina."
+        )
+    else:
+        result.note = "Nenhum preco reconhecido no texto da pagina."
+
+
+def wait_for_price_text(page, timeout_ms: int) -> None:
+    """Actively wait until the page shows at least one BRL amount, instead of
+    a blind fixed delay - a fixed delay can fire before the real results
+    replace a loading/teaser state, which is how an unrelated number (a promo
+    banner, a placeholder) ends up getting scraped instead of an actual fare.
+    Best-effort: if nothing shows up in time, move on and let the extraction
+    step report no_price_found."""
+    try:
+        page.wait_for_function("() => /R\\$\\s?\\d/.test(document.body.innerText)", timeout=timeout_ms)
+    except Exception:
+        pass
 
 
 def setup_logging() -> None:

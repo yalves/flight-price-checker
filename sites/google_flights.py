@@ -72,20 +72,25 @@ def _dump_controls(page, where: str) -> None:
     try:
         controls = page.evaluate(
             """() => {
-                const out = [];
-                const sel = 'button, [role=\"button\"], [role=\"checkbox\"], [role=\"menuitemradio\"], [role=\"spinbutton\"], input';
+                const sel = 'button, [role=\"button\"], [role=\"checkbox\"], [role=\"menuitemradio\"], [role=\"menuitemcheckbox\"], [role=\"spinbutton\"], [role=\"radio\"], input, select';
+                const rx = /bagag|mala|despach|carry|mão|\\bbag/i;
+                const relevant = [];
+                const others = [];
                 for (const el of document.querySelectorAll(sel)) {
                     const label = el.getAttribute('aria-label') || '';
-                    const text = (el.innerText || el.value || '').trim().replace(/\\s+/g, ' ').slice(0, 50);
-                    if (label || text) {
-                        out.push((label ? 'aria=' + JSON.stringify(label) : '') +
-                                 (text ? ' text=' + JSON.stringify(text) : ''));
-                    }
+                    const text = (el.innerText || el.value || '').trim().replace(/\\s+/g, ' ').slice(0, 60);
+                    if (!label && !text) continue;
+                    const entry = (label ? 'aria=' + JSON.stringify(label) : '') +
+                                  (text ? ' text=' + JSON.stringify(text) : '');
+                    if (rx.test(label) || rx.test(text)) relevant.push('BAG> ' + entry);
+                    else others.push(entry);
                 }
-                return out.slice(0, 80);
+                // Baggage-related controls first (unbounded), then a sample of
+                // the rest, so the stepper is never hidden by a size cap.
+                return relevant.concat(others.slice(0, 60));
             }"""
         )
-        log.info("DIAG [%s] %d controles clicaveis:", where, len(controls))
+        log.info("DIAG [%s] %d controles (bag-relevantes primeiro):", where, len(controls))
         for c in controls:
             log.info("    %s", c)
     except Exception as exc:

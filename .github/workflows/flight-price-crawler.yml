@@ -39,11 +39,28 @@ jobs:
         # the job commits what it got instead of failing the whole run.
         continue-on-error: true
 
+      - name: Upload debug logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-logs
+          path: logs/
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Commit updated price data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add precos_rio_buenosaires.csv docs/data.json
+          git add docs/data.json
+          # precos_rio_buenosaires.csv is only created once at least one
+          # priced result has ever been collected - a run that finds
+          # nothing (e.g. every site blocked, or no offer had a baggage
+          # match) leaves it absent, and `git add` on a nonexistent path
+          # fails the whole step, so only add it when it exists.
+          if [ -f precos_rio_buenosaires.csv ]; then
+            git add precos_rio_buenosaires.csv
+          fi
           git diff --cached --quiet && exit 0
           git commit -m "chore: update flight price data ($(date -u +%F))"
           git push

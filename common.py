@@ -121,7 +121,7 @@ def extract_priced_offers_with_checked_bag(
     return offers
 
 
-def apply_extracted_price(result: PriceResult, text: str) -> None:
+def apply_extracted_price(result: PriceResult, text: str, log: logging.Logger | None = None) -> None:
     """Fill in result.price_brl/status/note from page text, accepting only an
     offer whose nearby text confirms a checked bag is included."""
     bag_offers = extract_priced_offers_with_checked_bag(text)
@@ -136,6 +136,14 @@ def apply_extracted_price(result: PriceResult, text: str) -> None:
             f"{len(raw_offers)} preco(s) encontrados, mas nenhum com bagagem despachada "
             "confirmada no texto da pagina."
         )
+        if log is not None:
+            # The wording sites use for baggage inclusion can differ from
+            # _CHECKED_BAG_INCLUDED_HINTS - log the actual price-bearing
+            # lines so the hint lists can be tuned against real text
+            # instead of guessing blind.
+            price_lines = [line.strip() for line in text.splitlines() if _PRICE_RE.search(line)]
+            for sample in price_lines[:8]:
+                log.info("    linha com preco (sem bagagem confirmada): %r", sample)
     else:
         result.note = "Nenhum preco reconhecido no texto da pagina."
 

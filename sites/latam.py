@@ -64,7 +64,7 @@ def scrape(
         wait_for_price_text(page, config.PRICE_WAIT_TIMEOUT_MS)
         page.wait_for_timeout(config.SETTLE_WAIT_MS)
         text = page.inner_text("body")
-        apply_extracted_price(result, text)
+        apply_extracted_price(result, text, log=log)
     except Exception as exc:
         result.status = "error"
         result.note = f"{type(exc).__name__}: {exc}"

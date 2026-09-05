@@ -16,24 +16,32 @@ aeroporto do Rio) sao buscadas separadamente, uma passagem so de ida de
 cada vez, para que cada preco coletado fique claramente identificado como
 "Ida" ou "Volta" — em vez de um preco unico de ida-e-volta somados.
 
-Um preco so conta se a oferta inclui bagagem despachada. Cada site confirma
-isso de um jeito diferente (veja a secao abaixo): no Google Flights o
-crawler usa o proprio filtro "Bagagens" do site, que refaz o preco exibido
-ja somando 1 bagagem despachada; no Decolar/LATAM (quando acessiveis) o
-texto da pagina precisa mencionar isso explicitamente perto do valor (ex.:
-"bagagem despachada incluida") — um valor sem essa mencao por perto e
-descartado, e um valor perto de "sem bagagem despachada"/"somente bagagem
-de mao" tambem e descartado. So combinacoes site x aeroporto x
-trecho em que um preco assim foi realmente encontrado viram linha em
-`precos_rio_buenosaires.csv`; uma busca que falha (bloqueio do site,
-nenhum preco com bagagem confirmada, selector quebrado, etc.) fica
+O crawler coleta o **preco mais barato da rota** em cada busca. **Atencao
+sobre bagagem:** esse preco NAO tem garantia de bagagem despachada. O
+Google Flights (na pratica a unica fonte que responde — veja "Sobre falhas
+de coleta") nao oferece filtro de bagagem despachada (so de bagagem de
+mao) e nao diz no texto da pagina se a tarifa inclui bagagem — isso aparece
+so como um icone por voo. Entao a tarifa mais barata pode ser uma tarifa
+basica sem bagagem despachada (as vezes ate sem bagagem de mao). O
+dashboard mostra um aviso claro sobre isso e, em cada linha, o link
+"Ver oferta" para conferir a bagagem no proprio site antes de comprar.
+
+Para nao pegar o preco errado, buscas ignoram linhas que tem preco mas nao
+sao a tarifa da rota buscada — principalmente as sugestoes de outro
+aeroporto (ex.: "Voos saindo de GIG por R$ 404" que aparece na busca do
+SDU) e os avisos de historico de preco ("R$ X mais barato que o normal").
+Sem esse cuidado, o preco de um aeroporto vizinho vazava como se fosse o da
+rota.
+
+So combinacoes site x aeroporto x trecho em que um preco foi realmente
+encontrado viram linha em `precos_rio_buenosaires.csv`; uma busca que falha
+(bloqueio do site, nenhum preco reconhecido, selector quebrado, etc.) fica
 registrada so no log da execucao, sem gerar linha vazia no CSV ou no
-dashboard. Cada linha guarda tambem o link de busca usado no site, para ir
-direto conferir/comprar a oferta. Um resumo em JSON e gravado em
-`docs/data.json`; uma pagina estatica em `docs/index.html` le esse JSON e
-mostra um banner com o preco mais recente de cada trecho (destacado
-quando esta ate R$ 600), graficos e uma tabela com o historico de precos,
-publicada pelo GitHub Pages.
+dashboard. Cada linha guarda tambem o link de busca usado no site. Um
+resumo em JSON e gravado em `docs/data.json`; uma pagina estatica em
+`docs/index.html` le esse JSON e mostra um banner com o preco mais recente
+de cada trecho (destacado quando esta ate R$ 600), graficos e uma tabela
+com o historico de precos, publicada pelo GitHub Pages.
 
 ## Como roda
 
@@ -91,27 +99,29 @@ Tudo fica em `config.py`: `ORIGINS`, `DESTINATION`, `DEPART_DATE`,
 `RETURN_DATE` e `ADULTS`. Depois de mudar, rode `python crawler.py` (ou
 espere a proxima execucao agendada) para o dashboard refletir a nova busca.
 
-## Ajustar a exigencia de bagagem ou o preco em destaque
+## Por que a bagagem nao e filtrada (nota tecnica)
 
-- **Google Flights**: `sites/google_flights.py` clica no filtro "Bagagens"
-  do proprio site e aumenta bagagem despachada para 1 antes de ler os
-  precos (`_apply_checked_bag_filter`). Isso existe porque o Google Flights
-  so indica bagagem incluida por icone ao lado do preco — o texto da pagina
-  nunca menciona isso, entao um reconhecimento por palavra-chave nunca
-  funcionaria ali (confirmado num screenshot real salvo em `logs/`). Se o
-  Google mudar os rotulos do filtro e o clique parar de funcionar, o
-  crawler cai automaticamente para a checagem por texto (que vai dar
-  `no_price_found`, nunca um preco errado) — ajuste
-  `_BAGGAGE_FILTER_BUTTON_LABELS` / `_CHECKED_BAG_INCREMENT_LABELS` /
-  `_FILTER_DONE_LABELS` nesse arquivo se isso acontecer.
-- **Decolar / LATAM**: palavras usadas para reconhecer "inclui bagagem
-  despachada" e "sem bagagem despachada" ficam em `common.py`, nas listas
-  `_CHECKED_BAG_INCLUDED_HINTS` e `_CHECKED_BAG_EXCLUDED_HINTS`. Os
-  screenshots em `logs/` (ou no artefato `crawler-logs` de cada execucao,
-  aba **Actions**) ajudam a ver o texto real da pagina numa execucao que
-  deu `no_price_found`.
-- O valor que destaca um preco no banner do site (hoje R$ 600) fica em
-  `docs/index.html`, na constante `LOW_PRICE_THRESHOLD_BRL`.
+A ideia inicial era so contar tarifas com bagagem despachada, mas isso nao
+e viavel com as fontes atuais:
+
+- **Google Flights** nao tem filtro de bagagem despachada — so um filtro de
+  bagagem de mao (`"Bagagens"` -> `"Adicionar bagagem de mao"`). A info de
+  bagagem despachada por tarifa so aparece como icone/nos detalhes do voo,
+  nao filtravel nem no texto da pagina (confirmado inspecionando os
+  controles reais da pagina numa execucao).
+- **Decolar e LATAM** ficam bloqueados por protecao anti-bot (veja abaixo),
+  entao nao da pra ler bagagem la de qualquer jeito.
+
+Por isso o crawler mostra o preco mais barato da rota com um aviso claro no
+dashboard, em vez de esconder tudo. Se um dia voce quiser exigir pelo menos
+bagagem de mao, da pra automatizar o filtro "Bagagens" do Google Flights
+(clicar `"Bagagens"` e depois `"Adicionar bagagem de mao"` antes de ler os
+precos).
+
+O valor que destaca um preco no banner do site (hoje R$ 600) fica em
+`docs/index.html`, na constante `LOW_PRICE_THRESHOLD_BRL`. As linhas
+ignoradas na leitura de preco (sugestoes de outro aeroporto, historico)
+ficam em `common.py`, na regex `_DECOY_LINE_RE`.
 
 ## Sobre falhas de coleta
 
@@ -123,13 +133,12 @@ protecao anti-bot de terceiros) — se esses sites continuarem bloqueando
 sempre, o dashboard vai mostrar preco so do Google Flights mesmo, e essa e
 uma limitacao conhecida, nao um bug.
 
-Alem disso, um preco so e aceito com bagagem despachada confirmada (veja
-acima) — entao uma busca tambem pode nao gerar linha se o site respondeu
-normalmente mas so tinha tarifa sem bagagem. Quando qualquer uma dessas
-coisas acontece, essa busca especifica (site x aeroporto x trecho)
-simplesmente nao gera linha nenhuma no CSV/dashboard — ela nao aparece
-como um erro visivel na pagina, so fica registrada no log. Isso e esperado
-ocasionalmente e nao trava a coleta dos outros sites/trechos. Cada
+Quando um site bloqueia ou nao mostra preco, essa busca especifica (site x
+aeroporto x trecho) simplesmente nao gera linha nenhuma no CSV/dashboard —
+ela nao aparece como um erro visivel na pagina, so fica registrada no log.
+Isso e esperado ocasionalmente e nao trava a coleta dos outros
+sites/trechos. Na pratica, hoje, so o Google Flights costuma responder;
+Decolar e LATAM quase sempre bloqueiam a partir do runner do GitHub. Cada
 execucao do workflow sobe um artefato chamado `crawler-logs` (aba
 **Actions** -> a execucao -> Artifacts, disponivel por 14 dias) com
 `crawler.log` e um screenshot de cada busca — o jeito mais direto de ver o

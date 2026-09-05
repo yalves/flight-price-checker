@@ -13,7 +13,7 @@ import logging
 from datetime import date
 
 import config
-from common import PriceResult, apply_extracted_price, save_debug_artifacts, wait_for_price_text
+from common import PriceResult, apply_fare_price, save_debug_artifacts, wait_for_price_text
 
 SITE_NAME = "decolar"
 
@@ -64,7 +64,7 @@ def scrape(
         # depois que o primeiro preco aparece, para a lista terminar de assentar.
         page.wait_for_timeout(config.SETTLE_WAIT_MS + 5000)
         text = page.inner_text("body")
-        apply_extracted_price(result, text, log=log)
+        apply_fare_price(result, text)
     except Exception as exc:
         result.status = "error"
         result.note = f"{type(exc).__name__}: {exc}"

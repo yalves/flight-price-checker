@@ -13,37 +13,18 @@ import config
 
 _PRICE_RE = re.compile(r"R\$\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?")
 
-# Text hints used to tell whether a fare shown near a price includes a
-# checked bag. Best-effort: sites word this differently and can change
-# wording, so an amount with no baggage hint nearby is skipped rather than
-# assumed to include one - see extract_priced_offers_with_checked_bag().
-_CHECKED_BAG_INCLUDED_HINTS = [
-    "bagagem despachada incluída",
-    "bagagem despachada incluida",
-    "bagagem despachada grátis",
-    "bagagem despachada gratis",
-    "1 bagagem despachada",
-    "2 bagagens despachadas",
-    "inclui bagagem despachada",
-    "com bagagem despachada",
-    "bagagem despachada: incluída",
-    "checked bag included",
-    "1 checked bag",
-    "2 checked bags",
-]
-_CHECKED_BAG_EXCLUDED_HINTS = [
-    "sem bagagem despachada",
-    "não inclui bagagem despachada",
-    "nao inclui bagagem despachada",
-    "bagagem despachada não incluída",
-    "bagagem despachada nao incluida",
-    "somente bagagem de mão",
-    "apenas bagagem de mão",
-    "só bagagem de mão",
-    "no checked bag",
-    "carry-on bag only",
-    "hand baggage only",
-]
+# Lines that carry a BRL amount but are NOT a fare for the exact route being
+# searched, and must not be counted:
+#   - "Voos saindo de GIG por R$ 404" - a cross-airport suggestion shown on
+#     the SDU results page. This was the real bug behind the duplicate R$404:
+#     a naive min() over the whole page picked up the neighbouring airport's
+#     price as this route's fare.
+#   - "R$ 144 mais barato que o normal" - a price-history note, not a fare.
+# Prices on lines matching this are skipped by extract_fare_prices().
+_DECOY_LINE_RE = re.compile(
+    r"saindo de|mais barato que o normal|mais barato que a m[eé]dia|economize",
+    re.IGNORECASE,
+)
 
 CSV_FIELDS = [
     "collected_at",
@@ -84,67 +65,37 @@ def _to_float(raw: str) -> float | None:
         return None
 
 
-def extract_prices_from_text(text: str, min_value: float = 150, max_value: float = 15_000) -> list[float]:
-    """Find every BRL amount in page text and keep values in a plausible one-way fare range."""
+def extract_fare_prices(text: str, min_value: float = 150, max_value: float = 15_000) -> list[float]:
+    """Every in-range BRL amount on the page that plausibly belongs to a fare
+    for the searched route. Prices on cross-airport-suggestion or
+    price-history lines (see _DECOY_LINE_RE) are skipped, so the cheapest of
+    the returned list is the route's own fare and not a neighbouring
+    airport's teaser price.
+
+    NOTE: this does NOT verify baggage. Google Flights has no checked-baggage
+    filter and states baggage only via an icon, so the returned prices may be
+    basic fares with no checked (or even carry-on) bag. The dashboard warns
+    about this and links to the offer so it can be checked before buying."""
     prices = []
-    for raw in _PRICE_RE.findall(text):
-        value = _to_float(raw)
-        if value is not None and min_value <= value <= max_value:
-            prices.append(value)
+    for line in text.splitlines():
+        if _DECOY_LINE_RE.search(line):
+            continue
+        for raw in _PRICE_RE.findall(line):
+            value = _to_float(raw)
+            if value is not None and min_value <= value <= max_value:
+                prices.append(value)
     return prices
 
 
-def extract_priced_offers_with_checked_bag(
-    text: str, min_value: float = 150, max_value: float = 15_000
-) -> list[float]:
-    """Like extract_prices_from_text, but only keeps an amount that sits on
-    the same line as an explicit "checked bag included" mention, and always
-    drops one on a line marked carry-on-only/no checked bag. An amount with
-    no baggage wording on its own line is dropped too - missing a fare is
-    safer than quietly counting one that has no checked bag. Deliberately
-    scoped to a single line (not a wider character/line window): different
-    fare options usually render as adjacent lines, and a wider window ends
-    up mixing one fare's price with a neighboring fare's baggage wording."""
-    offers = []
-    for line in text.splitlines():
-        lower_line = line.lower()
-        if not _PRICE_RE.search(line):
-            continue
-        if any(hint in lower_line for hint in _CHECKED_BAG_EXCLUDED_HINTS):
-            continue
-        if not any(hint in lower_line for hint in _CHECKED_BAG_INCLUDED_HINTS):
-            continue
-        for m in _PRICE_RE.finditer(line):
-            value = _to_float(m.group(0))
-            if value is not None and min_value <= value <= max_value:
-                offers.append(value)
-    return offers
-
-
-def apply_extracted_price(result: PriceResult, text: str, log: logging.Logger | None = None) -> None:
-    """Fill in result.price_brl/status/note from page text, accepting only an
-    offer whose nearby text confirms a checked bag is included."""
-    bag_offers = extract_priced_offers_with_checked_bag(text)
-    if bag_offers:
-        result.price_brl = min(bag_offers)
+def apply_fare_price(result: PriceResult, text: str) -> None:
+    """Fill result.price_brl/status/note with the cheapest fare found for the
+    route (baggage not verified - see extract_fare_prices)."""
+    prices = extract_fare_prices(text)
+    if prices:
+        result.price_brl = min(prices)
         result.status = "ok"
-        return
-    raw_offers = extract_prices_from_text(text)
-    result.status = "no_price_found"
-    if raw_offers:
-        result.note = (
-            f"{len(raw_offers)} preco(s) encontrados, mas nenhum com bagagem despachada "
-            "confirmada no texto da pagina."
-        )
-        if log is not None:
-            # The wording sites use for baggage inclusion can differ from
-            # _CHECKED_BAG_INCLUDED_HINTS - log the actual price-bearing
-            # lines so the hint lists can be tuned against real text
-            # instead of guessing blind.
-            price_lines = [line.strip() for line in text.splitlines() if _PRICE_RE.search(line)]
-            for sample in price_lines[:8]:
-                log.info("    linha com preco (sem bagagem confirmada): %r", sample)
     else:
+        result.status = "no_price_found"
         result.note = "Nenhum preco reconhecido no texto da pagina."
 
 

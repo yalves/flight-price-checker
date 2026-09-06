@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-06T15:54:47",
+  "generated_at": "2026-09-06T16:00:53",
   "origin_options": [
     "GIG",
     "SDU"
@@ -187,32 +187,6 @@
       "flight_date": "2026-11-28",
       "price_brl": 873.0,
       "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way+nonstop",
-      "status": "ok",
-      "note": ""
-    },
-    {
-      "collected_at": "2026-09-06T15:48:47",
-      "site": "google_flights",
-      "trip_leg": "ida",
-      "rio_airport": "SDU",
-      "origin": "SDU",
-      "destination": "AEP",
-      "flight_date": "2026-11-21",
-      "price_brl": 648.0,
-      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Rio+de+Janeiro+Santos+Dumont+Airport+%28SDU%29+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-21+one+way+nonstop",
-      "status": "ok",
-      "note": ""
-    },
-    {
-      "collected_at": "2026-09-06T15:48:50",
-      "site": "google_flights",
-      "trip_leg": "volta",
-      "rio_airport": "SDU",
-      "origin": "AEP",
-      "destination": "SDU",
-      "flight_date": "2026-11-28",
-      "price_brl": 1308.0,
-      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Santos+Dumont+Airport+%28SDU%29+2026-11-28+one+way+nonstop",
       "status": "ok",
       "note": ""
     }

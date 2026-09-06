@@ -15,14 +15,28 @@ _PRICE_RE = re.compile(r"R\$\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?")
 
 # Lines that carry a BRL amount but are NOT a fare for the exact route being
 # searched, and must not be counted:
-#   - "Voos saindo de GIG por R$ 404" - a cross-airport suggestion shown on
-#     the SDU results page. This was the real bug behind the duplicate R$404:
-#     a naive min() over the whole page picked up the neighbouring airport's
-#     price as this route's fare.
+#   - "Voos saindo de GIG por R$ 404" / "Voar de: GIG ... a partir de R$ 648"
+#     / "Voar para: GIG ... a partir de R$ 1.308" - cross-airport suggestion
+#     cards shown when the searched airport is pricier or (under the nonstop
+#     filter) has no direct flight at all. SDU has no direct flight to AEP,
+#     so its page shows only a GIG suggestion - without this filter that
+#     GIG price was wrongly recorded as SDU's fare.
+#   - "a partir de R$ X" - a teaser/header amount (the "Menores precos" tab
+#     header and the suggestion cards). Real fares also appear as a bare
+#     "R$ X" on their own flight row, which IS counted, so dropping the
+#     teaser line loses nothing on a page that actually has results.
 #   - "R$ 144 mais barato que o normal" - a price-history note, not a fare.
-# Prices on lines matching this are skipped by extract_fare_prices().
 _DECOY_LINE_RE = re.compile(
-    r"saindo de|mais barato que o normal|mais barato que a m[eé]dia|economize",
+    r"saindo de|voar de|voar para|selecione aeroportos|a partir de|"
+    r"mais barato que o normal|mais barato que a m[eé]dia|economize",
+    re.IGNORECASE,
+)
+
+# When the page explicitly says no direct flight exists for the route, there
+# is no fare to record - any amount left on the page is a suggestion for a
+# different airport. Checked before extraction so those never leak in.
+_NO_DIRECT_FLIGHT_RE = re.compile(
+    r"nenhum voo (direto|sem escala).{0,40}encontrado|no (nonstop|direct) flights",
     re.IGNORECASE,
 )
 
@@ -76,6 +90,10 @@ def extract_fare_prices(text: str, min_value: float = 150, max_value: float = 15
     filter and states baggage only via an icon, so the returned prices may be
     basic fares with no checked (or even carry-on) bag. The dashboard warns
     about this and links to the offer so it can be checked before buying."""
+    # No direct flight for this route -> nothing to record; any remaining
+    # amount is a suggestion for a different airport.
+    if _NO_DIRECT_FLIGHT_RE.search(text):
+        return []
     prices = []
     for line in text.splitlines():
         if _DECOY_LINE_RE.search(line):
@@ -94,6 +112,9 @@ def apply_fare_price(result: PriceResult, text: str) -> None:
     if prices:
         result.price_brl = min(prices)
         result.status = "ok"
+    elif _NO_DIRECT_FLIGHT_RE.search(text):
+        result.status = "no_price_found"
+        result.note = "Nenhum voo direto encontrado para esta rota."
     else:
         result.status = "no_price_found"
         result.note = "Nenhum preco reconhecido no texto da pagina."

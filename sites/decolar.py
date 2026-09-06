@@ -23,11 +23,17 @@ _CONSENT_LABELS = ["Aceitar", "Aceitar todos", "Entendi", "OK"]
 
 
 def _search_url(origin: str, destination: str, flight_date: date) -> str:
-    return (
+    url = (
         "https://www.decolar.com/shop/flights/results/ow/"
         f"{origin}/{destination}/{flight_date.isoformat()}/"
         f"{config.ADULTS}/0/0/NA?flexDates=false&sc=OW"
     )
+    # Best-effort filtro de voos diretos (stops=0). Nao verificado, pois o
+    # Decolar bloqueia o acesso a partir do runner - se um dia desbloquear e
+    # esse parametro nao filtrar, ajuste aqui.
+    if getattr(config, "NONSTOP_ONLY", False):
+        url += "&stops=0"
+    return url
 
 
 def _dismiss_consent(page) -> None:

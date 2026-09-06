@@ -8,6 +8,11 @@ DEPART_DATE = date(2026, 11, 21)
 RETURN_DATE = date(2026, 11, 28)
 ADULTS = 1
 
+# So voos diretos (sem escala). Cada site aplica isso do jeito que da:
+# Google Flights via a busca ("nonstop" na query); Decolar via parametro de
+# URL (stops=0). Coloque False para voltar a considerar voos com conexao.
+NONSTOP_ONLY = True
+
 CSV_FILENAME = "precos_rio_buenosaires.csv"
 LOG_DIR = "logs"
 LOG_RETENTION_DAYS = 14

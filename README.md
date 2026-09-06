@@ -16,6 +16,11 @@ aeroporto do Rio) sao buscadas separadamente, uma passagem so de ida de
 cada vez, para que cada preco coletado fique claramente identificado como
 "Ida" ou "Volta" — em vez de um preco unico de ida-e-volta somados.
 
+Por padrao a busca considera **somente voos diretos (sem escala)** — no
+Google Flights isso vai na propria query ("nonstop"); no Decolar via
+parametro de URL (`stops=0`, best-effort). Da pra desligar em `config.py`
+com `NONSTOP_ONLY = False`.
+
 O crawler coleta o **preco mais barato da rota** em cada busca. **Atencao
 sobre bagagem:** esse preco NAO tem garantia de bagagem despachada. O
 Google Flights (na pratica a unica fonte que responde — veja "Sobre falhas

@@ -37,6 +37,11 @@ def _search_url(origin: str, destination: str, flight_date: date) -> str:
         f"{_AIRPORT_NAMES.get(destination, destination)} "
         f"{flight_date.isoformat()} one way"
     )
+    # Google Flights' natural-language query understands "nonstop" and applies
+    # the stops=Sem escalas filter, so the prices read back are direct-flight
+    # only.
+    if getattr(config, "NONSTOP_ONLY", False):
+        query += " nonstop"
     params = {"hl": "pt-BR", "gl": "BR", "curr": "BRL", "q": query}
     return "https://www.google.com/travel/flights?" + urllib.parse.urlencode(params)
 

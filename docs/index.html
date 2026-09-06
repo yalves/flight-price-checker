@@ -371,7 +371,7 @@ fetch("./data.json", { cache: "no-store" })
   .then((data) => {
     const rows = (data.rows || []).filter((r) => r.price_brl !== null && r.price_brl !== undefined && r.price_brl !== "");
     document.getElementById("subtitle").textContent =
-      "Ida " + fmtDate(data.depart_date) + ", volta " + fmtDate(data.return_date) + ". Destino: Aeroparque Jorge Newbery (" + data.destination + ").";
+      "Ida " + fmtDate(data.depart_date) + ", volta " + fmtDate(data.return_date) + ". Destino: Aeroparque Jorge Newbery (" + data.destination + "). Somente voos diretos (sem escala).";
     document.getElementById("generated").textContent = data.generated_at
       ? "Ultima coleta processada em: " + fmtDateTime(data.generated_at)
       : "Ainda sem nenhuma coleta registrada.";

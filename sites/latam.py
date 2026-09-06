@@ -29,6 +29,11 @@ def _search_url(origin: str, destination: str, flight_date: date) -> str:
         "redemption": "false",
         "sort": "RECOMMENDED",
     }
+    # Obs: a LATAM aplica o filtro de escalas no lado do cliente e nao tem um
+    # parametro de URL simples e confiavel para "sem escala"; como o site
+    # tambem bloqueia o acesso a partir do runner, config.NONSTOP_ONLY nao e
+    # aplicado aqui. Se a LATAM voltar a responder e o filtro for necessario,
+    # sera preciso interagir com o filtro de escalas na pagina.
     return "https://www.latamairlines.com/br/pt/oferta-voos?" + urllib.parse.urlencode(params)
 
 

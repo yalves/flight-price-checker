@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-08T15:09:00",
+  "generated_at": "2026-09-09T15:11:25",
   "origin_options": [
     "GIG",
     "SDU"
@@ -264,6 +264,32 @@
       "destination": "GIG",
       "flight_date": "2026-11-28",
       "price_brl": 1307.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-09-09T15:04:38",
+      "site": "google_flights",
+      "trip_leg": "ida",
+      "rio_airport": "GIG",
+      "origin": "GIG",
+      "destination": "AEP",
+      "flight_date": "2026-11-21",
+      "price_brl": 644.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-21+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-09-09T15:04:41",
+      "site": "google_flights",
+      "trip_leg": "volta",
+      "rio_airport": "GIG",
+      "origin": "AEP",
+      "destination": "GIG",
+      "flight_date": "2026-11-28",
+      "price_brl": 1183.0,
       "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way+nonstop",
       "status": "ok",
       "note": ""

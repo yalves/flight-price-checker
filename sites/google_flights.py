@@ -26,6 +26,7 @@ _AIRPORT_NAMES = {
     "GIG": "Rio de Janeiro Galeao Airport (GIG)",
     "SDU": "Rio de Janeiro Santos Dumont Airport (SDU)",
     "AEP": "Buenos Aires Aeroparque Jorge Newbery (AEP)",
+    "FTE": "El Calafate Airport (FTE)",
 }
 
 _CONSENT_LABELS = ["Aceitar tudo", "Aceitar", "I agree", "Accept all"]
@@ -58,15 +59,16 @@ def _dismiss_consent(page) -> None:
             continue
 
 
-def scrape(
-    context, origin: str, destination: str, flight_date: date, trip_leg: str, rio_airport: str
-) -> list[PriceResult]:
+def scrape(context, search: dict) -> list[PriceResult]:
+    origin, destination = search["origin"], search["destination"]
+    flight_date = search["flight_date"]
     url = _search_url(origin, destination, flight_date)
     page = context.new_page()
     result = PriceResult(
         site=SITE_NAME,
-        trip_leg=trip_leg,
-        rio_airport=rio_airport,
+        group=search["group"],
+        group_label=search["group_label"],
+        leg=search["leg"],
         origin=origin,
         destination=destination,
         flight_date=flight_date.isoformat(),
@@ -82,8 +84,8 @@ def scrape(
     except Exception as exc:
         result.status = "error"
         result.note = f"{type(exc).__name__}: {exc}"
-        log.exception("Falha ao buscar no Google Flights (%s, %s)", rio_airport, trip_leg)
+        log.exception("Falha ao buscar no Google Flights (%s %s-%s)", search["group"], origin, destination)
     finally:
-        save_debug_artifacts(page, SITE_NAME, rio_airport, trip_leg)
+        save_debug_artifacts(page, SITE_NAME, f"{search['group']}_{origin}-{destination}")
         page.close()
     return [result]

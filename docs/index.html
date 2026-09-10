@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Precos Rio de Janeiro - Buenos Aires (Aeroparque)</title>
+<title>Precos de voos - Buenos Aires / El Calafate</title>
 <style>
   :root {
     --bg: #f7f7f5;
@@ -112,7 +112,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Precos: Rio de Janeiro para Buenos Aires (Aeroparque)</h1>
+  <h1>Precos de voos &mdash; volta ao Rio &amp; El Calafate</h1>
   <p class="subtitle" id="subtitle">Carregando...</p>
 
   <section class="today-banner">
@@ -147,13 +147,10 @@
 <script>
 const SITE_LABELS = { google_flights: "Google Flights", decolar: "Decolar.com", latam: "LATAM" };
 const SITE_COLORS = { google_flights: "#4285F4", decolar: "#FF6B00", latam: "#6E2585" };
-const AIRPORT_NAMES = { GIG: "Galeao (GIG)", SDU: "Santos Dumont (SDU)" };
 const LEG_LABELS = { ida: "Ida", volta: "Volta" };
-const LEG_ROUTE_TITLES = {
-  ida: "Rio de Janeiro (GIG/SDU) &rarr; Aeroparque (AEP)",
-  volta: "Aeroparque (AEP) &rarr; Rio de Janeiro (GIG/SDU)",
-};
-// Highlight a stat tile when the cheapest known price for that leg is at or
+// Filled from data.airports (code -> friendly name); fallback below.
+let AIRPORT_NAMES = { GIG: "Galeao (GIG)", SDU: "Santos Dumont (SDU)", AEP: "Buenos Aires (AEP)", FTE: "El Calafate (FTE)" };
+// Highlight a stat tile when the cheapest known price for that group is at or
 // below this value.
 const LOW_PRICE_THRESHOLD_BRL = 600;
 
@@ -176,15 +173,17 @@ function fmtDate(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function airportName(code) {
+  return AIRPORT_NAMES[code] || code;
+}
+
 function routeLabel(row) {
-  return row.trip_leg === "volta"
-    ? "Aeroparque (AEP) &rarr; " + (AIRPORT_NAMES[row.rio_airport] || row.rio_airport)
-    : (AIRPORT_NAMES[row.rio_airport] || row.rio_airport) + " &rarr; Aeroparque (AEP)";
+  return airportName(row.origin) + " &rarr; " + airportName(row.destination);
 }
 
 // Per site+day, keep only the cheapest observation. Rows passed in may span
-// both Rio airports for the same leg - aggregating means each point on the
-// chart is "the best price found that day", regardless of which airport.
+// several airport pairs in the same group - aggregating means each point on
+// the chart is "the best price found that day" for the group.
 function cheapestPerSiteDay(rows) {
   const map = new Map();
   for (const r of rows) {
@@ -256,44 +255,42 @@ function buildChartSVG(rows) {
   return svg;
 }
 
-// Two charts total (Ida / Volta), each aggregating both Rio airports - not
-// split 4 ways, so the page stays scannable on a phone.
-function renderCharts(rows, departDate, returnDate) {
+// One chart per group (from data.groups), each aggregating any airport pairs
+// that share the group (e.g. the Rio return via GIG and via SDU).
+function renderCharts(rows, groups) {
   const container = document.getElementById("charts");
   container.innerHTML = "";
-  for (const tripLeg of ["ida", "volta"]) {
-    const legRows = rows.filter((r) => r.trip_leg === tripLeg);
+  for (const g of groups) {
+    const groupRows = rows.filter((r) => r.group === g.group);
     const card = document.createElement("div");
     card.className = "card";
-    const sitesPresent = [...new Set(legRows.map((r) => r.site))];
+    const sitesPresent = [...new Set(groupRows.map((r) => r.site))];
     const legend = sitesPresent
       .map((s) => '<span><span class="dot" style="background:' + (SITE_COLORS[s] || "#888") + '"></span>' + (SITE_LABELS[s] || s) + "</span>")
       .join("");
-    const flightDate = tripLeg === "ida" ? departDate : returnDate;
     card.innerHTML =
       '<div class="card-head">' +
-      '<h2><span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + LEG_ROUTE_TITLES[tripLeg] + "</h2>" +
-      '<span class="flight-date">' + (flightDate ? fmtDate(flightDate) : "") + "</span>" +
+      '<h2><span class="badge badge-' + g.leg + '">' + (LEG_LABELS[g.leg] || g.leg) + "</span> " + g.group_label + "</h2>" +
+      '<span class="flight-date">' + (g.flight_date ? fmtDate(g.flight_date) : "") + "</span>" +
       "</div>" +
-      buildChartSVG(legRows) +
+      buildChartSVG(groupRows) +
       '<div class="legend">' + (legend || "Sem coletas ainda") + "</div>";
     container.appendChild(card);
   }
 }
 
-// "Today" banner: cheapest price known per leg (aggregated across both Rio
-// airports), with the airport/site that had it and how it moved vs the
-// previous day the leg was collected.
-function buildStatTiles(rows) {
+// "Today" banner: cheapest price known per group, with the route/site that
+// had it and how it moved vs the previous day the group was collected.
+function buildStatTiles(rows, groups) {
   const grid = document.getElementById("statGrid");
   grid.innerHTML = "";
-  for (const tripLeg of ["ida", "volta"]) {
-    const legRows = rows.filter((r) => r.trip_leg === tripLeg && r.price_brl != null);
+  for (const g of groups) {
+    const groupRows = rows.filter((r) => r.group === g.group && r.price_brl != null);
     const tile = document.createElement("div");
     tile.className = "stat-tile";
-    const labelHtml = '<span class="badge badge-' + tripLeg + '">' + LEG_LABELS[tripLeg] + "</span> " + LEG_ROUTE_TITLES[tripLeg];
+    const labelHtml = '<span class="badge badge-' + g.leg + '">' + (LEG_LABELS[g.leg] || g.leg) + "</span> " + g.group_label;
 
-    if (legRows.length === 0) {
+    if (groupRows.length === 0) {
       tile.innerHTML =
         '<div class="stat-head"><span class="stat-label">' + labelHtml + "</span></div>" +
         '<div class="stat-value stat-empty">&mdash;</div>' +
@@ -303,7 +300,7 @@ function buildStatTiles(rows) {
     }
 
     const byDay = new Map();
-    for (const r of legRows) {
+    for (const r of groupRows) {
       const day = r.collected_at.slice(0, 10);
       const prev = byDay.get(day);
       if (!prev || r.price_brl < prev.price_brl) byDay.set(day, r);
@@ -335,7 +332,7 @@ function buildStatTiles(rows) {
       '<div class="stat-head"><span class="stat-label">' + labelHtml + "</span>" + deltaHtml + "</div>" +
       '<div class="stat-value">R$ ' + Math.round(latest.price_brl).toLocaleString("pt-BR") + "</div>" +
       '<div class="stat-sub">' +
-      (AIRPORT_NAMES[latest.rio_airport] || latest.rio_airport) + " &middot; " +
+      latest.origin + "&rarr;" + latest.destination + " &middot; " +
       (SITE_LABELS[latest.site] || latest.site) + " &middot; " + fmtDate(latestDay) +
       "</div>" + hotBadgeHtml;
     grid.appendChild(tile);
@@ -357,7 +354,7 @@ function renderTable(rows) {
     const link = r.url ? '<a class="offer-link" href="' + r.url + '" target="_blank" rel="noopener">Ver oferta &#8599;</a>' : "-";
     tr.innerHTML =
       "<td>" + fmtDateTime(r.collected_at) + "</td>" +
-      '<td><span class="badge badge-' + r.trip_leg + '">' + (LEG_LABELS[r.trip_leg] || r.trip_leg) + "</span> " + routeLabel(r) + "</td>" +
+      '<td><span class="badge badge-' + r.leg + '">' + (LEG_LABELS[r.leg] || r.leg) + "</span> " + routeLabel(r) + "</td>" +
       "<td>" + fmtDate(r.flight_date) + "</td>" +
       "<td>" + (SITE_LABELS[r.site] || r.site) + "</td>" +
       '<td class="price">' + fmtBRL(r.price_brl) + "</td>" +
@@ -369,14 +366,17 @@ function renderTable(rows) {
 fetch("./data.json", { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
+    if (data.airports) AIRPORT_NAMES = data.airports;
+    const groups = data.groups || [];
     const rows = (data.rows || []).filter((r) => r.price_brl !== null && r.price_brl !== undefined && r.price_brl !== "");
     document.getElementById("subtitle").textContent =
-      "Ida " + fmtDate(data.depart_date) + ", volta " + fmtDate(data.return_date) + ". Destino: Aeroparque Jorge Newbery (" + data.destination + "). Somente voos diretos (sem escala).";
+      (data.nonstop_only ? "Somente voos diretos (sem escala). " : "") +
+      "Precos sem garantia de bagagem — confira no link antes de comprar.";
     document.getElementById("generated").textContent = data.generated_at
       ? "Ultima coleta processada em: " + fmtDateTime(data.generated_at)
       : "Ainda sem nenhuma coleta registrada.";
-    buildStatTiles(rows);
-    renderCharts(rows, data.depart_date, data.return_date);
+    buildStatTiles(rows, groups);
+    renderCharts(rows, groups);
     renderTable(rows);
   })
   .catch((err) => {

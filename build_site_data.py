@@ -25,12 +25,29 @@ def build(csv_path: str | None = None, out_path: str | None = None) -> int:
                 rows.append(row)
     rows.sort(key=lambda r: r["collected_at"])
 
+    # Display groups, in the order they first appear in config.SEARCHES. The
+    # dashboard renders one card/tile per group; several airport pairs can
+    # share a group (e.g. the Rio return via GIG and via SDU).
+    groups = []
+    seen = set()
+    for s in config.SEARCHES:
+        if s["group"] in seen:
+            continue
+        seen.add(s["group"])
+        groups.append(
+            {
+                "group": s["group"],
+                "group_label": s["group_label"],
+                "leg": s["leg"],
+                "flight_date": s["flight_date"].isoformat(),
+            }
+        )
+
     payload = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "origin_options": config.ORIGINS,
-        "destination": config.DESTINATION,
-        "depart_date": config.DEPART_DATE.isoformat(),
-        "return_date": config.RETURN_DATE.isoformat(),
+        "nonstop_only": getattr(config, "NONSTOP_ONLY", False),
+        "airports": config.AIRPORTS,
+        "groups": groups,
         "rows": rows,
     }
 

@@ -43,8 +43,9 @@ _NO_DIRECT_FLIGHT_RE = re.compile(
 CSV_FIELDS = [
     "collected_at",
     "site",
-    "trip_leg",
-    "rio_airport",
+    "group",
+    "group_label",
+    "leg",
     "origin",
     "destination",
     "flight_date",
@@ -58,8 +59,9 @@ CSV_FIELDS = [
 @dataclass
 class PriceResult:
     site: str
-    trip_leg: str  # ida | volta
-    rio_airport: str  # GIG | SDU
+    group: str  # display/aggregation group, e.g. "rio_volta" | "elcalafate_ida"
+    group_label: str  # human label for the group
+    leg: str  # ida | volta (badge)
     origin: str
     destination: str
     flight_date: str
@@ -161,11 +163,13 @@ def cleanup_old_logs(log_dir: str = config.LOG_DIR, days: int = config.LOG_RETEN
             pass
 
 
-def save_debug_artifacts(page, site: str, rio_airport: str, trip_leg: str) -> None:
-    """Save a screenshot for the run, to speed up fixing a broken selector later."""
+def save_debug_artifacts(page, site: str, tag: str) -> None:
+    """Save a screenshot for the run, to speed up fixing a broken selector later.
+    `tag` identifies the search (e.g. "rio_volta_AEP-GIG")."""
     os.makedirs(config.LOG_DIR, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base = os.path.join(config.LOG_DIR, f"{site}_{rio_airport}_{trip_leg}_{ts}")
+    safe_tag = re.sub(r"[^A-Za-z0-9_-]+", "-", tag)
+    base = os.path.join(config.LOG_DIR, f"{site}_{safe_tag}_{ts}")
     try:
         page.screenshot(path=base + ".png", full_page=True)
     except Exception:

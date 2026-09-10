@@ -2,16 +2,64 @@
 import os
 from datetime import date
 
-ORIGINS = ["GIG", "SDU"]  # Rio de Janeiro: Galeao e Santos Dumont
-DESTINATION = "AEP"  # Buenos Aires, Aeroparque Jorge Newbery
-DEPART_DATE = date(2026, 11, 21)
-RETURN_DATE = date(2026, 11, 28)
 ADULTS = 1
 
 # So voos diretos (sem escala). Cada site aplica isso do jeito que da:
 # Google Flights via a busca ("nonstop" na query); Decolar via parametro de
 # URL (stops=0). Coloque False para voltar a considerar voos com conexao.
 NONSTOP_ONLY = True
+
+# Aeroportos que aparecem nas buscas (so para rotular no painel/logs).
+AIRPORTS = {
+    "GIG": "Galeao (GIG)",
+    "SDU": "Santos Dumont (SDU)",
+    "AEP": "Buenos Aires - Aeroparque (AEP)",
+    "FTE": "El Calafate (FTE)",
+}
+
+# Cada busca e um trecho SO DE IDA (origin -> destination numa data). Buscas
+# com o mesmo `group` aparecem juntas no painel (um card/grafico), agregadas
+# pelo menor preco - ex.: a volta ao Rio via Galeao e via Santos Dumont sao
+# o mesmo grupo. Edite aqui para mudar/adicionar rotas.
+#
+# Viagem atual:
+#   - Rio -> Buenos Aires (ida) JA FOI COMPRADA, entao nao e mais buscada.
+#   - Volta Buenos Aires -> Rio (28/11), Galeao ou Santos Dumont.
+#   - Bate-volta Buenos Aires <-> El Calafate: ida 25/11, volta 28/11.
+SEARCHES = [
+    {
+        "group": "rio_volta",
+        "group_label": "Volta ao Rio (Buenos Aires → GIG/SDU)",
+        "leg": "volta",
+        "origin": "AEP",
+        "destination": "GIG",
+        "flight_date": date(2026, 11, 28),
+    },
+    {
+        "group": "rio_volta",
+        "group_label": "Volta ao Rio (Buenos Aires → GIG/SDU)",
+        "leg": "volta",
+        "origin": "AEP",
+        "destination": "SDU",
+        "flight_date": date(2026, 11, 28),
+    },
+    {
+        "group": "elcalafate_ida",
+        "group_label": "Ida El Calafate (Buenos Aires → El Calafate)",
+        "leg": "ida",
+        "origin": "AEP",
+        "destination": "FTE",
+        "flight_date": date(2026, 11, 25),
+    },
+    {
+        "group": "elcalafate_volta",
+        "group_label": "Volta El Calafate (El Calafate → Buenos Aires)",
+        "leg": "volta",
+        "origin": "FTE",
+        "destination": "AEP",
+        "flight_date": date(2026, 11, 28),
+    },
+]
 
 CSV_FILENAME = "precos_rio_buenosaires.csv"
 LOG_DIR = "logs"

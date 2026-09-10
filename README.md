@@ -1,8 +1,13 @@
 # flight-price-checker
 
-Acompanha o preco de passagens aereas Rio de Janeiro &rarr; Buenos Aires
-(Aeroparque Jorge Newbery, AEP), ida **21/11/2026** e volta **28/11/2026**,
-saindo tanto do Galeao (GIG) quanto do Santos Dumont (SDU).
+Acompanha o preco de varias passagens aereas de uma viagem (novembro/2026),
+cada trecho buscado como uma passagem so-de-ida. As rotas ficam em
+`config.py` (`SEARCHES`); hoje sao:
+
+- **Volta ao Rio**: Buenos Aires (AEP) &rarr; Rio de Janeiro, Galeao (GIG)
+  ou Santos Dumont (SDU), em **28/11** (a ida ja foi comprada).
+- **Ida El Calafate**: Buenos Aires (AEP) &rarr; El Calafate (FTE), **25/11**.
+- **Volta El Calafate**: El Calafate (FTE) &rarr; Buenos Aires (AEP), **28/11**.
 
 Todo dia, um workflow do GitHub Actions abre um Chromium headless
 (Playwright) e busca o preco em tres sites:
@@ -11,10 +16,10 @@ Todo dia, um workflow do GitHub Actions abre um Chromium headless
 - **Decolar.com**
 - **LATAM**
 
-A ida (aeroporto do Rio &rarr; Aeroparque) e a volta (Aeroparque &rarr;
-aeroporto do Rio) sao buscadas separadamente, uma passagem so de ida de
-cada vez, para que cada preco coletado fique claramente identificado como
-"Ida" ou "Volta" — em vez de um preco unico de ida-e-volta somados.
+Cada busca e um trecho so-de-ida (origem, destino e data). Buscas com o
+mesmo `group` aparecem juntas no painel como um unico card/grafico,
+agregadas pelo menor preco — por exemplo a volta ao Rio via Galeao e via
+Santos Dumont sao o mesmo grupo.
 
 Por padrao a busca considera **somente voos diretos (sem escala)** — no
 Google Flights isso vai na propria query ("nonstop"); no Decolar via
@@ -98,11 +103,19 @@ preferindo o Python de dentro de `.venv\` se existir — util para agendar
 no Agendador de Tarefas caso voce prefira rodar localmente em vez de
 depender so do GitHub Actions.
 
-## Ajustar rota, datas ou aeroportos
+## Ajustar rotas, datas ou aeroportos
 
-Tudo fica em `config.py`: `ORIGINS`, `DESTINATION`, `DEPART_DATE`,
-`RETURN_DATE` e `ADULTS`. Depois de mudar, rode `python crawler.py` (ou
-espere a proxima execucao agendada) para o dashboard refletir a nova busca.
+Tudo fica em `config.py`, na lista `SEARCHES`. Cada item e um trecho
+so-de-ida com: `group` (id de agrupamento), `group_label` (titulo no
+painel), `leg` (`ida`/`volta`, so o rotulo colorido), `origin`,
+`destination` (codigos IATA) e `flight_date`. Buscas com o mesmo `group`
+viram um unico card, agregadas pelo menor preco. Para adicionar um novo
+aeroporto ao rotulo amigavel, inclua o codigo em `AIRPORTS`. `ADULTS` e
+`NONSTOP_ONLY` tambem ficam aqui. Depois de mudar, rode `python crawler.py`
+(ou espere a execucao agendada) para o painel refletir.
+
+Exemplo — para voltar a acompanhar tambem a ida Rio -> Buenos Aires, basta
+adicionar duas buscas (GIG->AEP e SDU->AEP) com `group: "rio_ida"`.
 
 ## Por que a bagagem nao e filtrada (nota tecnica)
 

@@ -26,7 +26,10 @@ _AIRPORT_NAMES = {
     "GIG": "Rio de Janeiro Galeao Airport (GIG)",
     "SDU": "Rio de Janeiro Santos Dumont Airport (SDU)",
     "AEP": "Buenos Aires Aeroparque Jorge Newbery (AEP)",
-    "FTE": "El Calafate Airport (FTE)",
+    # El Calafate has a single airport, so the plain city name resolves
+    # reliably in Google's natural-language search - the "... Airport (FTE)"
+    # form did NOT parse and dropped the search onto the Flights home page.
+    "FTE": "El Calafate",
 }
 
 _CONSENT_LABELS = ["Aceitar tudo", "Aceitar", "I agree", "Accept all"]

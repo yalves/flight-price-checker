@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T15:26:06",
+  "generated_at": "2026-10-17T14:15:32",
   "nonstop_only": true,
   "airports": {
     "GIG": "Galeao (GIG)",
@@ -1578,6 +1578,34 @@
       "destination": "AEP",
       "flight_date": "2026-11-28",
       "price_brl": 1520.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+El+Calafate+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-28+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-10-17T14:08:46",
+      "site": "google_flights",
+      "group": "rio_volta",
+      "group_label": "Volta ao Rio (Buenos Aires → GIG/SDU)",
+      "leg": "volta",
+      "origin": "AEP",
+      "destination": "GIG",
+      "flight_date": "2026-11-28",
+      "price_brl": 1458.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-10-17T14:09:35",
+      "site": "google_flights",
+      "group": "elcalafate_volta",
+      "group_label": "Volta El Calafate (El Calafate → Buenos Aires)",
+      "leg": "volta",
+      "origin": "FTE",
+      "destination": "AEP",
+      "flight_date": "2026-11-28",
+      "price_brl": 2741.0,
       "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+El+Calafate+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-28+one+way+nonstop",
       "status": "ok",
       "note": ""

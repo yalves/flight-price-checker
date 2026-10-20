@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T17:30:43",
+  "generated_at": "2026-10-20T15:42:43",
   "nonstop_only": true,
   "airports": {
     "GIG": "Galeao (GIG)",
@@ -1690,6 +1690,48 @@
       "destination": "AEP",
       "flight_date": "2026-11-28",
       "price_brl": 948.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+El+Calafate+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-28+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-10-20T15:36:36",
+      "site": "google_flights",
+      "group": "rio_volta",
+      "group_label": "Volta ao Rio (Buenos Aires → GIG/SDU)",
+      "leg": "volta",
+      "origin": "AEP",
+      "destination": "GIG",
+      "flight_date": "2026-11-28",
+      "price_brl": 1010.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+Rio+de+Janeiro+Galeao+Airport+%28GIG%29+2026-11-28+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-10-20T15:36:43",
+      "site": "google_flights",
+      "group": "elcalafate_ida",
+      "group_label": "Ida El Calafate (Buenos Aires → El Calafate)",
+      "leg": "ida",
+      "origin": "AEP",
+      "destination": "FTE",
+      "flight_date": "2026-11-25",
+      "price_brl": 715.0,
+      "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+to+El+Calafate+2026-11-25+one+way+nonstop",
+      "status": "ok",
+      "note": ""
+    },
+    {
+      "collected_at": "2026-10-20T15:36:46",
+      "site": "google_flights",
+      "group": "elcalafate_volta",
+      "group_label": "Volta El Calafate (El Calafate → Buenos Aires)",
+      "leg": "volta",
+      "origin": "FTE",
+      "destination": "AEP",
+      "flight_date": "2026-11-28",
+      "price_brl": 1247.0,
       "url": "https://www.google.com/travel/flights?hl=pt-BR&gl=BR&curr=BRL&q=flights+from+El+Calafate+to+Buenos+Aires+Aeroparque+Jorge+Newbery+%28AEP%29+2026-11-28+one+way+nonstop",
       "status": "ok",
       "note": ""
